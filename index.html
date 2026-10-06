@@ -7,6 +7,13 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
+        const SUPABASE_URL = "https://kzakzdjajveggcjfjtse.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6YWt6ZGphanZlZ2djamZqdHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEzMDUxNDQsImV4cCI6MjEwNjg4MTE0NH0.bmUvrTFOldr9yx4-VVcLU99mw6gD1JI1sUnRCAY5j4Y";
+
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
         tailwind.config = {
             theme: {
                 extend: {
@@ -28,6 +35,7 @@
         body { font-family: 'Inter', sans-serif; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
     </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
 
@@ -307,14 +315,14 @@
                     </div>
                     <div>
                         <label class="text-xs text-slate-400">Direction</label>
-                        <select id="inp-dir" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white">
+                       <select id="inp-dir" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white">
                             <option value="SHORT">🔴 SHORT</option>
                             <option value="LONG">🟢 LONG</option>
                         </select>
                     </div>
                     <div>
                         <label class="text-xs text-slate-400">RR Ratio</label>
-                        <input type="text" id="inp-rr" value="1:2.0" readonly class="w-full bg-slate-800/50 border border-slate-700 rounded-lg p-2 text-sm text-indigo-400 font-mono font-bold" />
+                       <input type="text" id="inp-rr" value="1:2.0" readonly class="w-full bg-slate-800/50 border border-slate-700 rounded-lg p-2 text-sm text-indigo-400 font-mono font-bold" />
                     </div>
                 </div>
 
@@ -325,7 +333,7 @@
                     </div>
                     <div>
                         <label class="text-xs text-slate-400">Stop Loss</label>
-                        <input type="number" id="inp-sl" value="4165" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white font-mono" />
+                       <input type="number" id="inp-sl" value="4165" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white font-mono" />
                     </div>
                     <div>
                         <label class="text-xs text-slate-400">Take Profit</label>
@@ -339,7 +347,7 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="text-xs text-slate-400">Emotion State</label>
-                            <select class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white">
+                            <select id="inp-emotion" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white">
                                 <option>😌 Calm / Disciplined</option>
                                 <option>😨 Fear</option>
                                 <option>🤑 Greed</option>
@@ -354,13 +362,13 @@
                     </div>
                     <div>
                         <label class="text-xs text-slate-400">Personal Notes</label>
-                        <textarea rows="2" placeholder="เข้าเทรดเพราะเห็น FVG ตรงกับ 15M Confirmation..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white"></textarea>
+                       <textarea id="inp-notes" rows="2" placeholder="เข้าเทรดเพราะเห็น FVG ตรงกับ 15M Confirmation..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white"></textarea>
                     </div>
                 </div>
 
                 <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
                     <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm text-slate-300">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold text-white">Save Trade</button>
+                    <button type="submit" onclick="event.preventDefault(); saveTradeToSupabase();" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold text-white">Save Trade</button>
                 </div>
             </form>
         </div>
@@ -395,7 +403,19 @@
                 document.getElementById('ai-breakdown').classList.remove('hidden');
             }, 1000);
         }
-
+async function saveTradeToSupabase() {
+const trade = {
+    pair: document.getElementById('inp-pair').value,
+    timeframe: document.getElementById('inp-tf').value,
+    direction: document.getElementById('inp-dir').value,
+    entry: parseFloat(document.getElementById('inp-entry').value) || null,
+    sl: parseFloat(document.getElementById('inp-sl').value) || null,
+    tp: parseFloat(document.getElementById('inp-tp').value) || null,
+    rr: parseFloat(document.getElementById('inp-rr').value.split(':')[1]) || null,
+    emotion: document.getElementById('inp-emotion').value,
+    followed_rules: document.getElementById('rules').checked,
+    personal_notes: document.getElementById('inp-notes').value
+};
         function triggerWeeklyAI() {
             alert('🤖 AI Review Generated!\n\nคำแนะนำประจำสัปดาห์:\n1. ลดการเปิด Trade ในช่วง New York Session\n2. ตั้งเฝ้าระวังข่าว US CPI และรอ 15 นาทีหลังข่าวออก');
         }
